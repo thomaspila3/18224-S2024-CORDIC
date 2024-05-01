@@ -3,7 +3,7 @@ project:
   source_files:
     - toplevel_chip.v
     - chip.sv
-    - decoder.v
+    - tt_um_cordic.v
   top_module:  "toplevel_chip"
 
 # As everyone will have access to all designs, try to make it easy for someone new to your design to know what
@@ -13,33 +13,21 @@ project:
 #
 # This info will be automatically collected and used to make a datasheet for the chip.
 documentation: 
-  author:       "PLACEHOLDER"      # Your name
-  discord:      ""      # Your discord handle
-  title:        "PLACEHOLDER"      # Project title
-  description:  "PLACEHOLDER"      # Short description of what your project does
-  how_it_works: "PLACEHOLDER"      # Longer description of how the project works
-  how_to_test:  "PLACEHOLDER"      # Instructions on how someone could test your project, include things like what buttons do what and how to set the clock if needed
-  external_hw:  "PLACEHOLDER"      # Describe any external hardware needed
-  language:     "verilog" # other examples include Verilog, Amaranth, VHDL, etc
-  doc_link:     ""      # URL to longer form documentation, eg the README.md in your repository
-  clock_hz:     1000       # Clock frequency in Hz (if required)
-  picture:      ""      # relative path to a picture in your repository
+  author:       "Thomas Kang"      # Your name
+  discord:      "dzavu"      # Your discord handle
+  title:        "CORDIC"      # Project title
+  description:  "CORDIC rotation and vectoring module"  
+  how_it_works: "You can input an angle in radians, or an x,y coordinate to get cosine/sin or atan/length of the vector" 
+  how_to_test:  "Code is tested with cocotb testbench cordic_tb.py and with an FPGA. To use an FPGA, set an input, then reset to get the output. Every time there's a change in input, one needs to reset the design" 
+  external_hw:  "Microcontroller to drive inputs and collect output" 
+  language:     "System Verilog" # other examples include Verilog, Amaranth, VHDL, etc
+  doc_link:     ""
+  clock_hz:     30000000       # Clock frequency in Hz (if required)
+  picture:      ""      
   inputs:               # a description of what the inputs do
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
+    - mode_toggle # toggles between rotation and vectoring mode
+    - out_toggle  # toggles between sin/cosine or atan/vector length
+    - in_val[9:0] # 10 bit input vector. Either 10 bit in radians (3 bit decimal, 7 bit fraction) or 2 5-bit fraction x/y coordinates
   outputs:
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-    - none
-
+    - done # indicates whether the design is done calculating
+    - val[10:0] # 11 bit output, 2 bit decimal 9 bit fraction
