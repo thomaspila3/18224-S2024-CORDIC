@@ -14,13 +14,13 @@ Each stage will perform a single iteration, which consists of couple of subtract
 After going through 16 stages in total, depending on the out_toggle and mode_toggle, one can choose which value to generate. Rotation mode generates cosine and sine of the input radian value. Vectoring generates arctan(y_in/x_in) or K(x_in^2 + y_in^2)^1/2 where K is a pre-defined value of 1.646760. 
 
 
-![top_level_diagram](docs/CORDIC_diagram.pdf)
+![top_level_diagram](docs/CORDIC_diagram.png)
 
 ## Inputs/Outputs
 
 ### INPUTS:
-**Clk**: simple clock\
-**rst**: resets the design. Each time one wants to change the mode or change the input value, you would need to assert this after changing the inputs accordingly.\
+**Clk**: clock signal of the design\
+**rst**: resets the entire design. Each time one wants to change the mode or change the input value, you would need to assert this after changing the inputs accordingly.\
 **10-bit in_val**: A 3-bit decimal, 7-bit fraction radian value for rotation mode, while it is 2 5-bit fraction x and y coordinate values concatenated for vectoring mode.\
 **1-bit out_toggle**: toggles between different outputs. Cosine vs sine OR arctan(y_in/x_in) vs K(x_in^2 + y_in^2)^1/2\
 **1-bit mode_toggle**: 0 means rotation mode, 1 means vectoring mode
