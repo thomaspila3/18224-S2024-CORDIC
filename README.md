@@ -14,7 +14,7 @@ Each stage will perform a single iteration, which consists of couple of subtract
 After going through 16 stages in total, depending on the out_toggle and mode_toggle, one can choose which value to generate. Rotation mode generates cosine and sine of the input radian value. Vectoring generates arctan(y_in/x_in) or K(x_in^2 + y_in^2)^1/2 where K is a pre-defined value of 1.646760. 
 
 
-![](docs/CORDIC_diagram.pdf)
+![top_level_diagram](docs/CORDIC_diagram.pdf)
 
 ## Inputs/Outputs
 
