@@ -5,13 +5,20 @@ Thomas Kang
 
 ## Overview
 
-CORDIC is a module that computes non-linear functions like cosine, sine, arctan, and distance formula without the usage of multipliers or dividers. There are two modes: vectoring and rotation mode. Vectoring mode returns arctan and length of a vector while rotation mode returns cosine and sine. 
+CORDIC stands for COordinate Rotation DIgital Computer, which is a way to calculate complex non-linear functions specifically without the use of expensive multipliers or dividers. There are two modes: vectoring and rotation mode. Vectoring mode returns the arctan and length of a vector(technically this is the distance between (x,y) and (0,0)) while rotation mode returns the cosine and sine of the input radian value. 
 
 ## How it Works
 
-In order to save space but also get a faster clock, I will be divide this into 16 stages, and 4 stages will be merged to one large stage. Total of 4 large stages are pipelined. 
-Each stage will perform a single iteration, which consists of couple of subtractors and comparators, and uses a singular pre-coded LUT value. Depending on the mode_toggle value that chooses between rotation mode and vectoring mode, in_x, in_y, and in_z into the stages differ. Each stage simply computes the addition or subtraction of in_x/shifted in_y, in_y/shifted in_x, and in_z/z_coefficient. Whether it subtracts or adds depends on the mode_toggle as well as the sign of in_y and in_z. 
-After going through 16 stages in total, depending on the out_toggle and mode_toggle, one can choose which value to generate. Rotation mode generates cosine and sine of the input radian value. Vectoring generates arctan(y_in/x_in) or K(x_in^2 + y_in^2)^1/2 where K is a pre-defined value of 1.646760. 
+To save space but also get a faster clock, I will divide the series of calculations into 16 stages, and 4 stages will be merged into one large stage. While I initially had 16 stages of the pipeline, this was using too much area due to registers at each stage. Thus, This design contains 4 large stages of pipeline.
+
+![iteration](docs/iteration.png)
+
+Each small stage will perform a single iteration of the calculation above, which consists of a couple of subtractors and comparators. We use specific alpha values so that they are a power of 2.
+
+![iteration](docs/iteration2.png)
+
+This replaces the multipliers or dividers with relatively cheaper shifters. Each stage simply computes the addition or subtraction of in_x/shifted in_y, in_y/shifted in_x, and in_z/z_coefficient. Whether it subtracts or adds, denoted by the d_i in the diagram, depends on the mode_toggle as well as the sign of in_y and in_z of that specific stage.  The large stage contains 4 of these smaller stages, and each out_x/y/z is the in_x/y/z of the next stage. Depending on the mode_toggle value that chooses between rotation mode and vectoring mode, in_x, in_y, and in_z in the first stage differs. 
+After going through 16 stages in total, depending on the out_toggle and mode_toggle, one can choose which value to generate. The rotation mode generates the cosine and sine of the input radian value. Vectoring generates arctan(y_in/x_in) or K(x_in^2 + y_in^2)^1/2 where K is a pre-defined value of 1.646760. 
 
 
 ![top_level_diagram](docs/CORDIC_diagram.png)
@@ -31,12 +38,12 @@ After going through 16 stages in total, depending on the out_toggle and mode_tog
 
 ## Design Testing / Bringup
 
-One can test the design using the provided cocotb testbench in testing/cordic_tb.py and testing/testbench.mk. Simply by running “make -Bf testbench.mk,” it will output the input and output of each testcase. The cocotb testbench sweeps the entire input range, which is 0~1.50 radians by 0.01 steps for rotation mode, and 1/32 ~ 31/32 x/y coordinate values for vectoring mode. Due to the limited number of input bits, vectoring mode saw some output values that weren’t as accurate. Those that are within 0.01 are full pass, within 0.1 are partial pass, and anything exceeding that was a fail. There are 30x30 = 900 total test cases, and there were 9 partial passes and 27 fails. For rotation mode, everything was within 0.01 error rate, giving them all a pass. For more information, take a look at testing/cordic_tb.py and testing/testbench.mk. Input_test_mode0 tests rotation mode, and input_test_mode1 tests vectoring mode.
+One can test the design using the provided cocotb testbench in testing/cordic_tb.py and testing/testbench.mk. Simply by running “make -Bf testbench.mk,” it will output the input and output of each test case, and whether it's a fail, partial pass, or pass. The cocotb testbench sweeps the entire input range, 0~1.50 radians by 0.01 steps for rotation mode, and 1/32 ~ 31/32 x/y coordinate values for vectoring mode. Due to the limited number of input bits, the vectoring mode saw some output values that weren’t as accurate. Those that are within 0.01 are full passes, within 0.1 are partial passes, and anything exceeding that is a fail. There are 30x30 + 150 = 1050 total test cases, and there were 9 partial passes and 27 fails. For rotation mode, everything was within 0.01 error rate, giving them all a pass. For more information, take a look at testing/cordic_tb.py and testing/testbench.mk. Input_test_mode0 tests rotation mode, and input_test_mode1 tests vectoring mode.
 
-One can also test the design using a microcontroller and an FPGA. The sample micropython code is testing/fpga_test_simple.py, and the constraints.lpf file was used to load the design on a ulx3s FPGA board. Simply hook up the Pi Pico(or any microcontroller) with the FPGA and initiate the output and input gpio pins. Once that’s done, set the input to whatever you want, reset the design, and you should see the output of the design being loaded. Every time you want to change the input value or mode, you will have to reset the design in between.
+One can also test the design using a microcontroller and an FPGA. I have specifically used an ulx3s FPGA board with a Pi Pico. The sample micropython code is testing/fpga_test_simple.py, and the constraints.lpf file was used to load the design on a ulx3s FPGA board. Simply hook up the Pi Pico(or any microcontroller) with the FPGA and initiate the output and input GPIO pins. Once that’s done, set the input to whatever you want, reset the design, and you should see the output of the design being fetched by the python script on the microcontroller. Every time you want to change the input value or mode, you will have to reset the design in between. Pictures of a sample output and test harness I used are included in the docs. 
 
 ## Future Work
-In case there are more pins accessible, it would be great to try increasing the x and y input width to get a better precision on the vectoring mode output. 
+In case there are more pins accessible, it would be great to try increasing the x and y input width to get better precision on the vectoring mode output. 
 Without an increase in pins, one could try these to improve the design:
 1) Make the design take in x and y input over multiple cycles to get a wider input value
 2) Have internal processing that enables the rotation mode to take in multiple quadrant radian values. 
