@@ -33,7 +33,7 @@ After going through 16 stages in total, depending on the out_toggle and mode_tog
 **1-bit mode_toggle**: 0 means rotation mode, 1 means vectoring mode
 
 ### OUTPUTS:
-**1-bit done**: Denotes when the calculation is done.\ 
+**1-bit done**: Denotes when the calculation is done. \
 **11-bit val**: Output of the design that can be changed by out_toggle or mode_toggle. 2-bit decimal and 9-bit fraction weighted two’s complement value. 
 
 ## Design Testing / Bringup
