@@ -53,11 +53,16 @@ After going through 16 stages in total, depending on the out_toggle and mode_tog
 
 ## Design Testing / Bringup
 
+**Simulation:**
 One can test the design using the provided cocotb testbench in testing/cordic_tb.py and testing/testbench.mk. Simply by running “make -Bf testbench.mk,” it will output the input and output of each test case, and whether it's a fail, partial pass, or pass. The cocotb testbench sweeps the entire input range, 0~1.50 radians by 0.01 steps for rotation mode, and 1/32 ~ 31/32 x/y coordinate values for vectoring mode. Due to the limited number of input bits, the vectoring mode saw some output values that weren’t as accurate. Those that are within 0.01 are full passes, within 0.1 are partial passes, and anything exceeding that is a fail. There are 30x30 + 150 = 1050 total test cases, and there were 9 partial passes and 27 fails. For rotation mode, everything was within 0.01 error rate, giving them all a pass. For more information, take a look at testing/cordic_tb.py and testing/testbench.mk. Input_test_mode0 tests rotation mode, and input_test_mode1 tests vectoring mode.
 
+**FPGA:**
 One can also test the design using a microcontroller and an FPGA. I have specifically used an ulx3s FPGA board with a Pi Pico. The sample micropython code is testing/fpga_test_simple.py, and the constraints.lpf file was used to load the design on a ulx3s FPGA board. Simply hook up the Pi Pico(or any microcontroller) with the FPGA and initiate the output and input GPIO pins. Once that’s done, set the input to whatever you want, reset the design, and you should see the output of the design being fetched by the Python script on the microcontroller. Every time you want to change the input value or mode, you will have to reset the design in between. Below is a picture of an FPGA's output fetched on the Microcontroller's Thonny terminal.
 
 ![fpga](docs/FPGA_testing.png)
+
+**Bringup:**
+Once the chip is manufactured, it can be tested with a microcontroller as well, similar to the FPGA. Hook up the outputs of the chip to the micro controller's GPIO as input, and input of the chip as the microcontroller's GPIO output. Once that's done, set the inputs to a desired value, reset the design, and fetch the value on the output. Remember to reset the design every time the input values change. As mentioned in the simulation section, the input for rotation mode ranges to 0~1.50 radians, which is 'b000_0000_000 ~ 'b001_1000_000 in binary. For vectoring mode, the input range is 1/32 ~ 31/32 for x and y respectively, and the 5 upper bits of in_val is x while the lower 5 bits are y. Thus, 'b00000_00000 ~ 'b11111_11111 is the range. Refer to the cocotb simulation output to verify correctness of the output from the chip. 
 
 ## Future Work
 In case there are more pins accessible, it would be great to try increasing the x and y input width to get better precision on the vectoring mode output. 
